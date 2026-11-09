@@ -1,39 +1,54 @@
 # Backend - Trivia API
 
+The backend of the Trivia app: a Flask API backed by a PostgreSQL database through SQLAlchemy.
+
+- `flaskr/__init__.py`: the application factory, the endpoints and the error handlers.
+- `models.py`: the database connection and the `Question` and `Category` models.
+- `test_flaskr.py`: the test suite.
+- `trivia.psql`: the script that populates the development database.
+
 ## Setting up the Backend
 
 ### Install Dependencies
 
-1. **Python 3.7** - Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
+1. **Python 3.11 or later** - Follow the instructions to install the latest version of Python for your platform in the [Python docs](https://www.python.org/downloads/).
 
-2. **Virtual Environment** - We recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organized. Instructions for setting up a virual environment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
-
-3. **PIP Dependencies** - Once your virtual environment is setup and running, install the required dependencies by navigating to the `/backend` directory and running:
+2. **Virtual Environment** - We recommend working within a virtual environment. This keeps the dependencies of each project separate and organized. From the `backend` folder:
 
 ```bash
-pip install -r requirements.txt
+python -m venv venv
+source venv/bin/activate        # Mac / Linux
+source venv/Scripts/activate    # Windows (Git Bash)
 ```
+
+3. **PIP Dependencies** - With the virtual environment activated, install the dependencies:
+
+```bash
+python -m pip install flask flask-cors flask-sqlalchemy "psycopg[binary]"
+```
+
+> The pinned versions in `requirements.txt` date from 2019 and do not install on recent versions of Python. The command above installs current versions instead.
 
 #### Key Pip Dependencies
 
-- [Flask](http://flask.pocoo.org/) is a lightweight backend microservices framework. Flask is required to handle requests and responses.
-
-- [SQLAlchemy](https://www.sqlalchemy.org/) is the Python SQL toolkit and ORM we'll use to handle the lightweight SQL database. You'll primarily work in `app.py`and can reference `models.py`.
-
-- [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension we'll use to handle cross-origin requests from our frontend server.
+- [Flask](https://flask.palletsprojects.com/) is a lightweight backend microservices framework. Flask is required to handle requests and responses.
+- [SQLAlchemy](https://www.sqlalchemy.org/) and [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) are the Python SQL toolkit and ORM used to handle the database.
+- [Flask-CORS](https://flask-cors.readthedocs.io/) is the extension used to handle cross-origin requests from the frontend server.
+- [psycopg](https://www.psycopg.org/psycopg3/) is the PostgreSQL driver used by SQLAlchemy.
 
 ### Set up the Database
 
-With Postgres running, create a `trivia` database:
+With PostgreSQL running, create the `trivia` database and populate it with the `trivia.psql` file. From the `backend` folder:
 
 ```bash
-createdb trivia
+createdb -U postgres trivia
+psql -U postgres -d trivia -f trivia.psql
 ```
 
-Populate the database using the `trivia.psql` file provided. From the `backend` folder in terminal run:
+To reset the database to its initial content, drop it and run the same commands again:
 
 ```bash
-psql trivia < trivia.psql
+dropdb -U postgres trivia
 ```
 
 #### Database credentials
@@ -49,59 +64,17 @@ export DB_NAME=trivia            # development database
 export TEST_DB_NAME=trivia_test  # test database
 ```
 
+Use single quotes around the password: with double quotes, the shell would interpret special characters such as `$`.
+
 ### Run the Server
 
-From within the `./src` directory first ensure you are working using your created virtual environment.
-
-To run the server, execute:
+From the `backend` folder, with the virtual environment activated:
 
 ```bash
-flask run --reload
+flask --app flaskr run --debug
 ```
 
-The `--reload` flag will detect file changes and restart the server automatically.
-
-## To Do Tasks
-
-These are the files you'd want to edit in the backend:
-
-1. `backend/flaskr/__init__.py`
-2. `backend/test_flaskr.py`
-
-One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior.
-
-1. Use Flask-CORS to enable cross-domain requests and set response headers.
-2. Create an endpoint to handle `GET` requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories.
-3. Create an endpoint to handle `GET` requests for all available categories.
-4. Create an endpoint to `DELETE` a question using a question `ID`.
-5. Create an endpoint to `POST` a new question, which will require the question and answer text, category, and difficulty score.
-6. Create a `POST` endpoint to get questions based on category.
-7. Create a `POST` endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
-8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
-9. Create error handlers for all expected errors including 400, 404, 422, and 500.
-
-## Documenting your Endpoints
-
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
-
-### Documentation Example
-
-`GET '/api/v1.0/categories'`
-
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
-
-```json
-{
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
-}
-```
+The `--debug` flag enables the debugger and restarts the server automatically when a file changes. The API is available at `http://127.0.0.1:5000/`.
 
 ## API Reference
 
@@ -110,6 +83,19 @@ You will need to provide detailed documentation of your API endpoints including 
 - **Base URL:** this app can only be run locally. The backend is hosted at `http://127.0.0.1:5000/`, which is set as a proxy in the frontend configuration.
 - **Authentication:** this version of the application does not require authentication or API keys.
 - **CORS:** cross-origin requests are allowed from any origin. Responses allow the `Content-Type` and `Authorization` headers and the `GET`, `POST`, `DELETE` and `OPTIONS` methods.
+- **Request body:** requests with a body (`POST`) must send JSON, with the header `Content-Type: application/json`.
+
+### Endpoints summary
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/categories` | List all categories |
+| `GET` | `/questions?page={page}` | List questions, 10 per page, with all categories |
+| `GET` | `/categories/{category_id}/questions` | List the questions of a category |
+| `POST` | `/questions` | Create a question |
+| `POST` | `/questions` (with `searchTerm`) | Search questions |
+| `DELETE` | `/questions/{question_id}` | Delete a question |
+| `POST` | `/quizzes` | Get the next random question of a quiz |
 
 ### Error Handling
 
@@ -154,22 +140,6 @@ The API returns the following error types:
     "5": "Entertainment",
     "6": "Sports"
   }
-}
-```
-
-#### `DELETE /questions/{question_id}`
-
-- Deletes the question with the given id.
-- Path parameters:
-  - `question_id` (integer, required): id of the question to delete.
-- Returns: an object with a `success` value and the id of the deleted question.
-- Errors: `404` if the question does not exist, `422` if it cannot be deleted.
-- Sample request: `curl -X DELETE http://127.0.0.1:5000/questions/23`
-
-```json
-{
-  "success": true,
-  "deleted": 23
 }
 ```
 
@@ -243,7 +213,7 @@ The API returns the following error types:
   - `answer` (string, required): text of the answer.
   - `difficulty` (integer from 1 to 5, required).
   - `category` (integer, required): id of an existing category.
-  
+
   Numeric values sent as strings (for example `"3"`) are accepted.
 - Returns: status `201` and an object with a `success` value and the id of the created question.
 - Errors: `400` if a field is missing, empty or invalid, `422` if the category does not exist or the question cannot be saved.
@@ -289,10 +259,33 @@ curl -X POST http://127.0.0.1:5000/questions \
       "answer": "Maya Angelou",
       "category": 4,
       "difficulty": 2
+    },
+    {
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?",
+      "answer": "Edward Scissorhands",
+      "category": 5,
+      "difficulty": 3
     }
   ],
   "totalQuestions": 2,
   "currentCategory": null
+}
+```
+
+#### `DELETE /questions/{question_id}`
+
+- Deletes the question with the given id.
+- Path parameters:
+  - `question_id` (integer, required): id of the question to delete.
+- Returns: an object with a `success` value and the id of the deleted question.
+- Errors: `404` if the question does not exist, `422` if it cannot be deleted.
+- Sample request: `curl -X DELETE http://127.0.0.1:5000/questions/23`
+
+```json
+{
+  "success": true,
+  "deleted": 23
 }
 ```
 
@@ -325,23 +318,29 @@ curl -X POST http://127.0.0.1:5000/quizzes \
 }
 ```
 
-
 ## Testing
 
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
+The test suite uses `unittest` and covers the success and error behaviors of every endpoint, as well as the error handlers and the CORS headers.
 
-To deploy the tests,
-
-Create the test database once, run:
+Create the test database once:
 
 ```bash
-createdb trivia_test
+createdb -U postgres trivia_test
 ```
 
-Then run the tests from the `backend` folder:
+Then run the tests from the `backend` folder, with the virtual environment activated:
 
 ```bash
 python test_flaskr.py
 ```
 
-Each test starts from a clean state: the tables are created and seeded with a known set of categories and questions in `setUp`, then dropped in `tearDown`. You do not need to reload `trivia.psql` before running the tests.
+Each test starts from a clean state: the tables are created and seeded with a known set of categories and questions in `setUp`, then dropped in `tearDown`. You do not need to load `trivia.psql` into the test database.
+
+### Code style
+
+The backend code follows [PEP 8](https://peps.python.org/pep-0008/). To check it:
+
+```bash
+python -m pip install flake8
+python -m flake8 flaskr/__init__.py models.py test_flaskr.py
+```

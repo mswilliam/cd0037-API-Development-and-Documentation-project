@@ -262,6 +262,70 @@ curl -X POST http://127.0.0.1:5000/questions \
 }
 ```
 
+#### `POST /questions` (search questions)
+
+- Searches the questions whose text contains the search term (case-insensitive substring match). The same endpoint creates a question when the body has no `searchTerm` key.
+- Request body:
+  - `searchTerm` (string, required): the term to look for.
+- Request arguments:
+  - `page` (integer, optional, default `1`): page number. Questions are returned in groups of 10.
+- Returns: an object with a `success` value, the matching `questions`, `totalQuestions` (number of matching questions) and `currentCategory` (`null`). A search without results returns an empty list.
+- Errors: `400` if `searchTerm` is not a string.
+- Sample request:
+
+```bash
+curl -X POST http://127.0.0.1:5000/questions \
+  -H "Content-Type: application/json" \
+  -d '{"searchTerm": "title"}'
+```
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+      "answer": "Maya Angelou",
+      "category": 4,
+      "difficulty": 2
+    }
+  ],
+  "totalQuestions": 2,
+  "currentCategory": null
+}
+```
+
+#### `POST /quizzes`
+
+- Fetches a random question to play the quiz, within the given category and excluding the questions already asked.
+- Request body:
+  - `previous_questions` (list of integers, required): ids of the questions already asked. Can be empty.
+  - `quiz_category` (object, required): the category to play, as `{"type": <string>, "id": <integer or string>}`. An `id` of `0` means all categories (the `type` is ignored).
+- Returns: an object with a `success` value and a `question` object. When no question is left in the category, `question` is `null`, which ends the game.
+- Errors: `400` if the body is missing or invalid, `404` if the category does not exist.
+- Sample request:
+
+```bash
+curl -X POST http://127.0.0.1:5000/quizzes \
+  -H "Content-Type: application/json" \
+  -d '{"previous_questions": [20], "quiz_category": {"type": "Science", "id": "1"}}'
+```
+
+```json
+{
+  "success": true,
+  "question": {
+    "id": 22,
+    "question": "Hematology is a branch of medicine involving the study of what?",
+    "answer": "Blood",
+    "category": 1,
+    "difficulty": 4
+  }
+}
+```
+
+
 ## Testing
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.

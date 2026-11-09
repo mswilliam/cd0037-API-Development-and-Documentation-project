@@ -377,6 +377,103 @@ class TriviaTestCase(unittest.TestCase):
         self.assert_error_response(res, 422, "unprocessable")
         self.assertEqual(total, 5)
 
+    # ---------- POST /questions (search) ----------
+
+    def test_search_questions_with_results(self):
+        """Test searching questions with a case-insensitive substring"""
+        res = self.client.post("/questions", json={"searchTerm": "who"})
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["totalQuestions"], 2)
+        self.assertEqual(len(data["questions"]), 2)
+        self.assertIn("currentCategory", data)
+        self.assertTrue(
+            all("who" in q["question"].lower() for q in data["questions"])
+        )
+
+    def test_search_questions_without_results(self):
+        """Test that a search without results returns an empty list"""
+        res = self.client.post("/questions", json={"searchTerm": "applejacks"})
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["questions"], [])
+        self.assertEqual(data["totalQuestions"], 0)
+
+    def test_400_search_questions_with_invalid_term(self):
+        """Test that a search term which is not a string is rejected"""
+        res = self.client.post("/questions", json={"searchTerm": 123})
+
+        self.assert_error_response(res, 400, "bad request")
+
+    # ---------- POST /quizzes ----------
+
+    def test_play_quiz_all_categories(self):
+        """Test that ALL (id 0) draws from every category, minus previous"""
+        res = self.client.post(
+            "/quizzes",
+            json={
+                "previous_questions": [1, 2, 3, 4],
+                "quiz_category": {"type": "click", "id": 0},
+            },
+        )
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["question"]["id"], 5)
+
+    def test_play_quiz_by_category_excludes_previous_questions(self):
+        """Test drawing a question of the category not asked yet"""
+        res = self.client.post(
+            "/quizzes",
+            json={
+                "previous_questions": [1],
+                "quiz_category": {"type": "Science", "id": "1"},
+            },
+        )
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["question"]["id"], 2)
+        self.assertEqual(data["question"]["category"], 1)
+
+    def test_play_quiz_returns_null_when_no_question_left(self):
+        """Test that the end of the quiz is signaled by a null question"""
+        res = self.client.post(
+            "/quizzes",
+            json={
+                "previous_questions": [1, 2],
+                "quiz_category": {"type": "Science", "id": "1"},
+            },
+        )
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertIsNone(data["question"])
+
+    def test_400_play_quiz_with_invalid_body(self):
+        """Test that a quiz request without category is rejected"""
+        res = self.client.post("/quizzes", json={"previous_questions": []})
+
+        self.assert_error_response(res, 400, "bad request")
+
+    def test_404_play_quiz_with_unknown_category(self):
+        """Test playing a quiz in a category that does not exist"""
+        res = self.client.post(
+            "/quizzes",
+            json={
+                "previous_questions": [],
+                "quiz_category": {"type": "Unknown", "id": 1000},
+            },
+        )
+
+        self.assert_error_response(res, 404, "resource not found")
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

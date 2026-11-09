@@ -81,9 +81,28 @@ def create_app(test_config=None):
 
         return jsonify({"success": True, "deleted": question_id})
 
-    @app.route("/questions", methods=["POST"])
-    def create_question():
-        body = request.get_json(silent=True) or {}
+    def search_questions(search_term):
+        if not isinstance(search_term, str):
+            abort(400)
+
+        selection = (
+            Question.query.filter(
+                Question.question.ilike("%{}%".format(search_term))
+            )
+            .order_by(Question.id)
+            .all()
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "questions": paginate_questions(request, selection),
+                "totalQuestions": len(selection),
+                "currentCategory": None,
+            }
+        )
+
+    def create_question(body):
 
         question_text = str(body.get("question") or "").strip()
         answer_text = str(body.get("answer") or "").strip()
@@ -116,16 +135,13 @@ def create_app(test_config=None):
 
         return jsonify({"success": True, "created": question.id}), 201
 
-    """
-    @TODO:
-    Create a POST endpoint to get questions based on a search term.
-    It should return any questions for whom the search term
-    is a substring of the question.
+    @app.route("/questions", methods=["POST"])
+    def create_or_search_questions():
+        body = request.get_json(silent=True) or {}
 
-    TEST: Search by any phrase. The questions list will update to include
-    only question that include that string within their question.
-    Try using the word "title" to start.
-    """
+        if "searchTerm" in body:
+            return search_questions(body["searchTerm"])
+        return create_question(body)
 
     @app.route("/categories/<int:category_id>/questions")
     def retrieve_questions_by_category(category_id):
@@ -154,17 +170,36 @@ def create_app(test_config=None):
             }
         )
 
-    """
-    @TODO:
-    Create a POST endpoint to get questions to play the quiz.
-    This endpoint should take category and previous question parameters
-    and return a random questions within the given category,
-    if provided, and that is not one of the previous questions.
+    @app.route("/quizzes", methods=["POST"])
+    def play_quiz():
+        body = request.get_json(silent=True) or {}
+        previous_questions = body.get("previous_questions", [])
+        quiz_category = body.get("quiz_category")
 
-    TEST: In the "Play" tab, after a user selects "All" or a category,
-    one question at a time is displayed, the user is allowed to answer
-    and shown whether they were correct or not.
-    """
+        if not isinstance(previous_questions, list) or not all(
+            isinstance(question_id, int) for question_id in previous_questions
+        ):
+            abort(400)
+        if not isinstance(quiz_category, dict):
+            abort(400)
+
+        try:
+            category_id = int(quiz_category.get("id", 0))
+        except (TypeError, ValueError):
+            abort(400)
+
+        query = Question.query
+        if category_id != 0:
+            if db.session.get(Category, category_id) is None:
+                abort(404)
+            query = query.filter(Question.category == category_id)
+        if previous_questions:
+            query = query.filter(Question.id.notin_(previous_questions))
+
+        candidates = query.all()
+        question = random.choice(candidates).format() if candidates else None
+
+        return jsonify({"success": True, "question": question})
 
     # ---------- Error handlers ----------
 

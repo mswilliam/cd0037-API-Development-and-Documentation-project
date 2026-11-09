@@ -207,6 +207,34 @@ The API returns the following error types:
 }
 ```
 
+#### `GET /categories/{category_id}/questions`
+
+- Fetches the questions of the given category.
+- Path parameters:
+  - `category_id` (integer, required): id of the category.
+- Request arguments:
+  - `page` (integer, optional, default `1`): page number. Questions are returned in groups of 10.
+- Returns: an object with a `success` value, the `questions` of the category, `totalQuestions` (number of questions in the category) and `currentCategory` (name of the category). A category without questions returns an empty list.
+- Errors: `404` if the category does not exist, or if the page does not exist.
+- Sample request: `curl http://127.0.0.1:5000/categories/1/questions`
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 20,
+      "question": "What is the heaviest organ in the human body?",
+      "answer": "The Liver",
+      "category": 1,
+      "difficulty": 4
+    }
+  ],
+  "totalQuestions": 3,
+  "currentCategory": "Science"
+}
+```
+
 ## Testing
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.

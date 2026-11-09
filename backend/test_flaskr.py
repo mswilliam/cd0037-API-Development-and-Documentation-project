@@ -269,6 +269,39 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 404, "resource not found")
 
+    # ---------- GET /categories/<id>/questions ----------
+
+    def test_get_questions_by_category(self):
+        """Test retrieving only the questions of a given category"""
+        res = self.client.get("/categories/1/questions")
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(len(data["questions"]), 2)
+        self.assertEqual(data["totalQuestions"], 2)
+        self.assertEqual(data["currentCategory"], "Science")
+        self.assertTrue(
+            all(question["category"] == 1 for question in data["questions"])
+        )
+
+    def test_get_questions_by_category_without_questions(self):
+        """Test that an existing category with no questions is not an error"""
+        res = self.client.get("/categories/6/questions")
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["questions"], [])
+        self.assertEqual(data["totalQuestions"], 0)
+        self.assertEqual(data["currentCategory"], "Sports")
+
+    def test_404_get_questions_by_unknown_category(self):
+        """Test retrieving the questions of a category that does not exist"""
+        res = self.client.get("/categories/1000/questions")
+
+        self.assert_error_response(res, 404, "resource not found")
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

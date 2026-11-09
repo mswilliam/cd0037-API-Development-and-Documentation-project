@@ -21,7 +21,7 @@ class TriviaTestCase(unittest.TestCase):
             self.database_host,
             self.database_name,
         )
-        
+
         # Create app with the test configuration
         self.app = create_app({
             "SQLALCHEMY_DATABASE_URI": self.database_path,
@@ -30,9 +30,62 @@ class TriviaTestCase(unittest.TestCase):
         })
         self.client = self.app.test_client()
 
-        # Bind the app to the current context and create all tables
+        # Bind the app to the current context, create all tables
+        # and seed them with a known set of data
         with self.app.app_context():
             db.create_all()
+            self.seed_database()
+
+    def seed_database(self):
+        """Insert the categories and questions used by the tests."""
+        categories = [
+            Category(type=category_type)
+            for category_type in [
+                "Science",
+                "Art",
+                "Geography",
+                "History",
+                "Entertainment",
+                "Sports",
+            ]
+        ]
+        db.session.add_all(categories)
+        db.session.commit()
+
+        questions = [
+            Question(
+                question="What is the heaviest organ in the human body?",
+                answer="The Liver",
+                category="1",
+                difficulty=4,
+            ),
+            Question(
+                question="Who discovered penicillin?",
+                answer="Alexander Fleming",
+                category="1",
+                difficulty=3,
+            ),
+            Question(
+                question="Which Dutch graphic artist was a creator of optical illusions?",
+                answer="Escher",
+                category="2",
+                difficulty=1,
+            ),
+            Question(
+                question="What is the largest lake in Africa?",
+                answer="Lake Victoria",
+                category="3",
+                difficulty=2,
+            ),
+            Question(
+                question="Who invented Peanut Butter?",
+                answer="George Washington Carver",
+                category="4",
+                difficulty=2,
+            ),
+        ]
+        db.session.add_all(questions)
+        db.session.commit()
 
     def tearDown(self):
         """Executed after each test"""

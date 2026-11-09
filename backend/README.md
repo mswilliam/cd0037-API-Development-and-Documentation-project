@@ -107,11 +107,18 @@ You will need to provide detailed documentation of your API endpoints including 
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
 
-To deploy the tests, run
+To deploy the tests,
+
+Create the test database once, run:
 
 ```bash
-dropdb trivia_test
 createdb trivia_test
-psql trivia_test < trivia.psql
+```
+
+Then run the tests from the `backend` folder:
+
+```bash
 python test_flaskr.py
 ```
+
+Each test starts from a clean state: the tables are created and seeded with a known set of categories and questions in `setUp`, then dropped in `tearDown`. You do not need to reload `trivia.psql` before running the tests.

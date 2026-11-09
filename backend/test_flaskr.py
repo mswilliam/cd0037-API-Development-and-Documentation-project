@@ -3,6 +3,7 @@ import unittest
 
 from urllib.parse import quote_plus
 from flaskr import create_app
+from flask import abort
 from models import db, Question, Category
 
 
@@ -93,11 +94,63 @@ class TriviaTestCase(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
+    # ---------- Helpers ----------
 
+    def register_failing_route(self, path, status_code, methods=None):
+        """Add a temporary route to the test app that aborts with status_code."""
+
+        def failing_view():
+            abort(status_code)
+
+        self.app.add_url_rule(
+            path, endpoint=path, view_func=failing_view, methods=methods
+        )
+
+    def assert_error_response(self, res, status_code, message):
+        """Check that an error is returned as JSON with the expected content."""
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, status_code)
+        self.assertIsNotNone(data, "error response should be JSON")
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["error"], status_code)
+        self.assertEqual(data["message"], message)
+
+    # ---------- Error handlers ----------
+
+    def test_404_for_unknown_route(self):
+        """Test that an unknown URL returns a JSON 404 error"""
+        res = self.client.get("/unknown-route")
+
+        self.assert_error_response(res, 404, "resource not found")
+
+    def test_400_error_handler(self):
+        """Test that a 400 error is returned as JSON"""
+        self.register_failing_route("/test-400", 400)
+        res = self.client.get("/test-400")
+
+        self.assert_error_response(res, 400, "bad request")
+
+    def test_405_for_method_not_allowed(self):
+        """Test that a method not allowed on a route returns a JSON 405 error"""
+        self.register_failing_route("/test-405", 400, methods=["GET"])
+        res = self.client.post("/test-405")
+
+        self.assert_error_response(res, 405, "method not allowed")
+
+    def test_422_error_handler(self):
+        """Test that a 422 error is returned as JSON"""
+        self.register_failing_route("/test-422", 422)
+        res = self.client.get("/test-422")
+
+        self.assert_error_response(res, 422, "unprocessable")
+
+    def test_500_error_handler(self):
+        """Test that a 500 error is returned as JSON"""
+        self.register_failing_route("/test-500", 500)
+        res = self.client.get("/test-500")
+
+        self.assert_error_response(res, 500, "internal server error")
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

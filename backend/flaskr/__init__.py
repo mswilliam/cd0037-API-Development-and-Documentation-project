@@ -97,11 +97,33 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
-    """
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
-    """
+    # ---------- Error handlers ----------
+
+    def error_response(status_code, message):
+        return (
+            jsonify({"success": False, "error": status_code, "message": message}),
+            status_code,
+        )
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return error_response(400, "bad request")
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return error_response(404, "resource not found")
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return error_response(405, "method not allowed")
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return error_response(422, "unprocessable")
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return error_response(500, "internal server error")
 
     return app
 

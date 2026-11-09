@@ -103,6 +103,31 @@ You will need to provide detailed documentation of your API endpoints including 
 }
 ```
 
+## API Reference
+
+### Error Handling
+
+Errors are returned as JSON objects in the following format:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+The API returns the following error types:
+
+| Status code | Message | Cause |
+|---|---|---|
+| 400 | `bad request` | The request is malformed or missing required data. |
+| 404 | `resource not found` | The requested resource or page does not exist. |
+| 405 | `method not allowed` | The HTTP method is not supported on this endpoint. |
+| 422 | `unprocessable` | The request is well formed but could not be processed. |
+| 500 | `internal server error` | An unexpected error occurred on the server. |
+
+
 ## Testing
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.

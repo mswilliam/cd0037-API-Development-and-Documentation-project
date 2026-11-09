@@ -127,6 +127,29 @@ The API returns the following error types:
 | 422 | `unprocessable` | The request is well formed but could not be processed. |
 | 500 | `internal server error` | An unexpected error occurred on the server. |
 
+### Endpoints
+
+#### `GET /categories`
+
+- Fetches a dictionary of categories in which the keys are the ids and the values are the corresponding category names.
+- Request arguments: none
+- Returns: an object with a `success` value and a `categories` object of `id: category_string` key-value pairs.
+- Errors: `405` if any other method than `GET` is used.
+- Sample request: `curl http://127.0.0.1:5000/categories`
+
+```json
+{
+  "success": true,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  }
+}
+```
 
 ## Testing
 

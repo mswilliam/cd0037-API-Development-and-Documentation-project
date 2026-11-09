@@ -152,6 +152,34 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 500, "internal server error")
 
+    # ---------- GET /categories ----------
+
+    def test_get_categories(self):
+        """Test retrieving all categories as an id: type dictionary"""
+        res = self.client.get("/categories")
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(
+            data["categories"],
+            {
+                "1": "Science",
+                "2": "Art",
+                "3": "Geography",
+                "4": "History",
+                "5": "Entertainment",
+                "6": "Sports",
+            },
+        )
+
+    def test_405_post_categories(self):
+        """Test that POST is not allowed on the categories collection"""
+        res = self.client.post("/categories")
+
+        self.assert_error_response(res, 405, "method not allowed")
+
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

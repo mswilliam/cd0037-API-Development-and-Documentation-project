@@ -6,6 +6,13 @@ from models import setup_db, Question, Category, db
 
 QUESTIONS_PER_PAGE = 10
 
+
+def get_categories_dict():
+    """Return all categories as an {id: type} dictionary."""
+    categories = Category.query.order_by(Category.id).all()
+    return {category.id: category.type for category in categories}
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -25,13 +32,9 @@ def create_app(test_config=None):
     """
     @TODO: Use the after_request decorator to set Access-Control-Allow
     """
-
-    """
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
-    """
-
+    @app.route("/categories")
+    def retrieve_categories():
+        return jsonify({"success": True, "categories": get_categories_dict()})
 
     """
     @TODO:

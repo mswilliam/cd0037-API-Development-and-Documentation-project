@@ -116,6 +116,22 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["error"], status_code)
         self.assertEqual(data["message"], message)
 
+    def add_questions(self, count, category=1):
+        """Insert extra questions, for tests that need more than the seed."""
+        with self.app.app_context():
+            db.session.add_all(
+                [
+                    Question(
+                        question="Extra question {}".format(index),
+                        answer="Extra answer {}".format(index),
+                        category=category,
+                        difficulty=1,
+                    )
+                    for index in range(count)
+                ]
+            )
+            db.session.commit()
+
     # ---------- Error handlers ----------
 
     def test_404_for_unknown_route(self):
@@ -194,6 +210,41 @@ class TriviaTestCase(unittest.TestCase):
         self.assertIn(
             "DELETE", res.headers.get("Access-Control-Allow-Methods", "")
         )
+
+    # ---------- GET /questions ----------
+
+    def test_get_paginated_questions(self):
+        """Test retrieving the first page of questions with categories"""
+        res = self.client.get("/questions")
+        data = res.get_json()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(len(data["questions"]), 5)
+        self.assertEqual(data["totalQuestions"], 5)
+        self.assertEqual(len(data["categories"]), 6)
+        self.assertIn("currentCategory", data)
+        self.assertEqual(
+            set(data["questions"][0].keys()),
+            {"id", "question", "answer", "category", "difficulty"},
+        )
+
+    def test_questions_are_paginated_by_ten(self):
+        """Test that questions are returned in pages of ten"""
+        self.add_questions(7)
+
+        first_page = self.client.get("/questions?page=1").get_json()
+        second_page = self.client.get("/questions?page=2").get_json()
+
+        self.assertEqual(first_page["totalQuestions"], 12)
+        self.assertEqual(len(first_page["questions"]), 10)
+        self.assertEqual(len(second_page["questions"]), 2)
+
+    def test_404_requesting_questions_beyond_valid_page(self):
+        """Test requesting a page of questions that does not exist"""
+        res = self.client.get("/questions?page=1000")
+
+        self.assert_error_response(res, 404, "resource not found")
 
 
 # Make the tests conveniently executable

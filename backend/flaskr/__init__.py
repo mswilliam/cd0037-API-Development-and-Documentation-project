@@ -13,6 +13,17 @@ def get_categories_dict():
     return {category.id: category.type for category in categories}
 
 
+def paginate_questions(request, selection):
+    """Return the formatted questions of the page requested in the query."""
+    page = request.args.get("page", 1, type=int)
+    if page < 1:
+        return []
+
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    return [question.format() for question in selection[start:end]]
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -38,18 +49,23 @@ def create_app(test_config=None):
     def retrieve_categories():
         return jsonify({"success": True, "categories": get_categories_dict()})
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests for questions,
-    including pagination (every 10 questions).
-    This endpoint should return a list of questions,
-    number of total questions, current category, categories.
+    @app.route("/questions")
+    def retrieve_questions():
+        selection = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
 
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
-    """
+        if len(current_questions) == 0:
+            abort(404)
+
+        return jsonify(
+            {
+                "success": True,
+                "questions": current_questions,
+                "totalQuestions": len(selection),
+                "categories": get_categories_dict(),
+                "currentCategory": None,
+            }
+        )
 
     """
     @TODO:

@@ -157,6 +157,40 @@ The API returns the following error types:
 }
 ```
 
+#### `GET /questions`
+
+- Fetches a paginated list of questions, the total number of questions, all categories and the current category.
+- Request arguments:
+  - `page` (integer, optional, default `1`): page number, starting from 1. Questions are returned in groups of 10.
+- Returns: an object with a `success` value, the `questions` of the page, `totalQuestions`, a `categories` object of `id: category_string` pairs, and `currentCategory` (`null` when listing all questions).
+- Errors: `404` if the page does not exist.
+- Sample request: `curl http://127.0.0.1:5000/questions?page=1`
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 2,
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?",
+      "answer": "Apollo 13",
+      "category": 5,
+      "difficulty": 4
+    }
+  ],
+  "totalQuestions": 19,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": null
+}
+```
+
 ## Testing
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.

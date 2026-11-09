@@ -67,7 +67,10 @@ class TriviaTestCase(unittest.TestCase):
                 difficulty=3,
             ),
             Question(
-                question="Which Dutch graphic artist was a creator of optical illusions?",
+                question=(
+                    "Which Dutch graphic artist was a creator "
+                    "of optical illusions?"
+                ),
                 answer="Escher",
                 category=2,
                 difficulty=1,
@@ -97,7 +100,7 @@ class TriviaTestCase(unittest.TestCase):
     # ---------- Helpers ----------
 
     def register_failing_route(self, path, status_code, methods=None):
-        """Add a temporary route to the test app that aborts with status_code."""
+        """Add a temporary test route that aborts with status_code."""
 
         def failing_view():
             abort(status_code)
@@ -107,7 +110,7 @@ class TriviaTestCase(unittest.TestCase):
         )
 
     def assert_error_response(self, res, status_code, message):
-        """Check that an error is returned as JSON with the expected content."""
+        """Check that an error response is JSON with the expected content."""
         data = res.get_json()
 
         self.assertEqual(res.status_code, status_code)
@@ -148,7 +151,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assert_error_response(res, 400, "bad request")
 
     def test_405_for_method_not_allowed(self):
-        """Test that a method not allowed on a route returns a JSON 405 error"""
+        """Test that a method not allowed returns a JSON 405 error"""
         self.register_failing_route("/test-405", 400, methods=["GET"])
         res = self.client.post("/test-405")
 
@@ -322,7 +325,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data["success"], True)
         self.assertIsNotNone(question)
-        self.assertEqual(question.format()["question"], new_question["question"])
+        self.assertEqual(
+            question.format()["question"], new_question["question"]
+        )
         self.assertEqual(question.format()["category"], 3)
         self.assertEqual(total, 6)
 
@@ -350,7 +355,11 @@ class TriviaTestCase(unittest.TestCase):
         """Test that a question without an answer is rejected and not saved"""
         res = self.client.post(
             "/questions",
-            json={"question": "A question without answer", "difficulty": 1, "category": 1},
+            json={
+                "question": "A question without answer",
+                "difficulty": 1,
+                "category": 1,
+            },
         )
 
         with self.app.app_context():
@@ -360,7 +369,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(total, 5)
 
     def test_422_create_question_with_unknown_category(self):
-        """Test that a question in a category that does not exist is rejected"""
+        """Test that a question in an unknown category is rejected"""
         res = self.client.post(
             "/questions",
             json={

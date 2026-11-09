@@ -14,19 +14,17 @@ database_path = "postgresql://{}:{}@{}/{}".format(
 
 db = SQLAlchemy()
 
-"""
-setup_db(app)
-    binds a flask application and a SQLAlchemy service
-"""
+
 def setup_db(app, database_path=database_path):
+    """Bind a Flask application and a SQLAlchemy service."""
     app.config['SQLALCHEMY_DATABASE_URI'] = database_path
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-"""
-Question
-"""
+
 class Question(db.Model):
+    """A trivia question with its answer, category and difficulty."""
+
     __tablename__ = 'questions'
 
     id = Column(Integer, primary_key=True)
@@ -61,10 +59,10 @@ class Question(db.Model):
             'difficulty': self.difficulty
         }
 
-"""
-Category
-"""
+
 class Category(db.Model):
+    """A category of trivia questions."""
+
     __tablename__ = 'categories'
 
     id = Column(Integer, primary_key=True)

@@ -41,8 +41,12 @@ def create_app(test_config=None):
 
     @app.after_request
     def after_request(response):
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-        response.headers["Access-Control-Allow-Methods"] = "GET,POST,DELETE,OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type,Authorization"
+        )
+        response.headers["Access-Control-Allow-Methods"] = (
+            "GET,POST,DELETE,OPTIONS"
+        )
         return response
 
     @app.route("/categories")
@@ -204,10 +208,8 @@ def create_app(test_config=None):
     # ---------- Error handlers ----------
 
     def error_response(status_code, message):
-        return (
-            jsonify({"success": False, "error": status_code, "message": message}),
-            status_code,
-        )
+        body = {"success": False, "error": status_code, "message": message}
+        return jsonify(body), status_code
 
     @app.errorhandler(400)
     def bad_request(error):
@@ -230,4 +232,3 @@ def create_app(test_config=None):
         return error_response(500, "internal server error")
 
     return app
-

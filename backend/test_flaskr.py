@@ -179,6 +179,22 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 405, "method not allowed")
 
+    # ---------- CORS ----------
+
+    def test_cors_headers(self):
+        """Test that responses allow cross-origin requests"""
+        res = self.client.get(
+            "/categories", headers={"Origin": "http://localhost:3000"}
+        )
+
+        self.assertEqual(res.headers.get("Access-Control-Allow-Origin"), "*")
+        self.assertIn(
+            "Content-Type", res.headers.get("Access-Control-Allow-Headers", "")
+        )
+        self.assertIn(
+            "DELETE", res.headers.get("Access-Control-Allow-Methods", "")
+        )
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

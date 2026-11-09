@@ -105,6 +105,12 @@ You will need to provide detailed documentation of your API endpoints including 
 
 ## API Reference
 
+### Getting Started
+
+- **Base URL:** this app can only be run locally. The backend is hosted at `http://127.0.0.1:5000/`, which is set as a proxy in the frontend configuration.
+- **Authentication:** this version of the application does not require authentication or API keys.
+- **CORS:** cross-origin requests are allowed from any origin. Responses allow the `Content-Type` and `Authorization` headers and the `GET`, `POST`, `DELETE` and `OPTIONS` methods.
+
 ### Error Handling
 
 Errors are returned as JSON objects in the following format:

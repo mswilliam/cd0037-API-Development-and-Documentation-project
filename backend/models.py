@@ -1,10 +1,16 @@
+import os
+from urllib.parse import quote_plus
+
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
-database_name = 'trivia'
-database_user = 'postgres'
-database_password = 'password'
-database_host = 'localhost:5432'
-database_path = f'postgresql://{database_user}:{database_password}@{database_host}/{database_name}'
+
+database_name = os.environ.get("DB_NAME", "trivia")
+database_user = os.environ.get("DB_USER", "postgres")
+database_password = os.environ.get("DB_PASSWORD", "password")
+database_host = os.environ.get("DB_HOST", "localhost:5432")
+database_path = "postgresql://{}:{}@{}/{}".format(
+    database_user, quote_plus(database_password), database_host, database_name
+)
 
 db = SQLAlchemy()
 

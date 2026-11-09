@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from urllib.parse import quote_plus
 from flaskr import create_app
 from models import db, Question, Category
 
@@ -10,12 +11,17 @@ class TriviaTestCase(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        self.database_name = "trivia_test"
-        self.database_user = "postgres"
-        self.database_password = "password"
-        self.database_host = "localhost:5432"
-        self.database_path = f"postgresql://{self.database_user}:{self.database_password}@{self.database_host}/{self.database_name}"
-
+        self.database_name = os.environ.get("TEST_DB_NAME", "trivia_test")
+        self.database_user = os.environ.get("DB_USER", "postgres")
+        self.database_password = os.environ.get("DB_PASSWORD", "password")
+        self.database_host = os.environ.get("DB_HOST", "localhost:5432")
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
+            self.database_user,
+            quote_plus(self.database_password),
+            self.database_host,
+            self.database_name,
+        )
+        
         # Create app with the test configuration
         self.app = create_app({
             "SQLALCHEMY_DATABASE_URI": self.database_path,

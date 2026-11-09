@@ -36,6 +36,19 @@ Populate the database using the `trivia.psql` file provided. From the `backend` 
 psql trivia < trivia.psql
 ```
 
+#### Database credentials
+
+The app connects to PostgreSQL with the user `postgres` and the password `password` by default.
+To use other credentials, set these environment variables before running the app or the tests:
+
+```bash
+export DB_USER=postgres
+export DB_PASSWORD='your_password'
+export DB_HOST=localhost:5432
+export DB_NAME=trivia            # development database
+export TEST_DB_NAME=trivia_test  # test database
+```
+
 ### Run the Server
 
 From within the `./src` directory first ensure you are working using your created virtual environment.

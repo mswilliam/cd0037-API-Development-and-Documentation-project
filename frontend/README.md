@@ -226,3 +226,7 @@ You can optionally update this game play to increase the number of questions or 
   "currentCategory": "Entertainment"
 }
 ```
+
+## Changes to the starter code
+
+`src/components/QuestionView.js` reads the `totalQuestions` and `currentCategory` keys (camelCase) instead of `total_questions` and `current_category`, to match the API contract described in the backend README.

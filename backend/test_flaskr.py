@@ -57,31 +57,31 @@ class TriviaTestCase(unittest.TestCase):
             Question(
                 question="What is the heaviest organ in the human body?",
                 answer="The Liver",
-                category="1",
+                category=1,
                 difficulty=4,
             ),
             Question(
                 question="Who discovered penicillin?",
                 answer="Alexander Fleming",
-                category="1",
+                category=1,
                 difficulty=3,
             ),
             Question(
                 question="Which Dutch graphic artist was a creator of optical illusions?",
                 answer="Escher",
-                category="2",
+                category=2,
                 difficulty=1,
             ),
             Question(
                 question="What is the largest lake in Africa?",
                 answer="Lake Victoria",
-                category="3",
+                category=3,
                 difficulty=2,
             ),
             Question(
                 question="Who invented Peanut Butter?",
                 answer="George Washington Carver",
-                category="4",
+                category=4,
                 difficulty=2,
             ),
         ]

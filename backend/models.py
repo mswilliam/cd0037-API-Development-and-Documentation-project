@@ -1,7 +1,7 @@
 import os
 from urllib.parse import quote_plus
 
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, ForeignKey
 from flask_sqlalchemy import SQLAlchemy
 
 database_name = os.environ.get("DB_NAME", "trivia")
@@ -32,7 +32,7 @@ class Question(db.Model):
     id = Column(Integer, primary_key=True)
     question = Column(String, nullable=False)
     answer = Column(String, nullable=False)
-    category = Column(String, nullable=False)
+    category = Column(Integer, ForeignKey("categories.id"), nullable=False)
     difficulty = Column(Integer, nullable=False)
 
     def __init__(self, question, answer, category, difficulty):

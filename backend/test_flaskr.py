@@ -195,6 +195,29 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 405, "method not allowed")
 
+    # ---------- DELETE /questions/<id> ----------
+
+    def test_delete_question(self):
+        """Test deleting a question, and that the deletion persists"""
+        res = self.client.delete("/questions/1")
+        data = res.get_json()
+
+        with self.app.app_context():
+            question = db.session.get(Question, 1)
+            remaining = Question.query.count()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["deleted"], 1)
+        self.assertIsNone(question)
+        self.assertEqual(remaining, 4)
+
+    def test_404_delete_unknown_question(self):
+        """Test deleting a question that does not exist"""
+        res = self.client.delete("/questions/1000")
+
+        self.assert_error_response(res, 404, "resource not found")
+
     # ---------- CORS ----------
 
     def test_cors_headers(self):

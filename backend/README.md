@@ -157,6 +157,22 @@ The API returns the following error types:
 }
 ```
 
+#### `DELETE /questions/{question_id}`
+
+- Deletes the question with the given id.
+- Path parameters:
+  - `question_id` (integer, required): id of the question to delete.
+- Returns: an object with a `success` value and the id of the deleted question.
+- Errors: `404` if the question does not exist, `422` if it cannot be deleted.
+- Sample request: `curl -X DELETE http://127.0.0.1:5000/questions/23`
+
+```json
+{
+  "success": true,
+  "deleted": 23
+}
+```
+
 #### `GET /questions`
 
 - Fetches a paginated list of questions, the total number of questions, all categories and the current category.

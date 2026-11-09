@@ -235,6 +235,33 @@ The API returns the following error types:
 }
 ```
 
+#### `POST /questions` (create a question)
+
+- Creates a new question.
+- Request body:
+  - `question` (string, required): text of the question.
+  - `answer` (string, required): text of the answer.
+  - `difficulty` (integer from 1 to 5, required).
+  - `category` (integer, required): id of an existing category.
+  
+  Numeric values sent as strings (for example `"3"`) are accepted.
+- Returns: status `201` and an object with a `success` value and the id of the created question.
+- Errors: `400` if a field is missing, empty or invalid, `422` if the category does not exist or the question cannot be saved.
+- Sample request:
+
+```bash
+curl -X POST http://127.0.0.1:5000/questions \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the capital of Luxembourg?", "answer": "Luxembourg", "difficulty": 2, "category": 3}'
+```
+
+```json
+{
+  "success": true,
+  "created": 24
+}
+```
+
 ## Testing
 
 Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.

@@ -302,6 +302,81 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 404, "resource not found")
 
+    # ---------- POST /questions (create) ----------
+
+    def test_create_question(self):
+        """Test creating a question, and that it is saved in the database"""
+        new_question = {
+            "question": "What is the capital of Luxembourg?",
+            "answer": "Luxembourg",
+            "difficulty": 2,
+            "category": 3,
+        }
+        res = self.client.post("/questions", json=new_question)
+        data = res.get_json()
+
+        with self.app.app_context():
+            question = db.session.get(Question, data["created"])
+            total = Question.query.count()
+
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(data["success"], True)
+        self.assertIsNotNone(question)
+        self.assertEqual(question.format()["question"], new_question["question"])
+        self.assertEqual(question.format()["category"], 3)
+        self.assertEqual(total, 6)
+
+    def test_create_question_with_string_values(self):
+        """Test that numeric fields sent as strings by the form are accepted"""
+        res = self.client.post(
+            "/questions",
+            json={
+                "question": "Who painted the Mona Lisa?",
+                "answer": "Leonardo da Vinci",
+                "difficulty": "1",
+                "category": "2",
+            },
+        )
+        data = res.get_json()
+
+        with self.app.app_context():
+            question = db.session.get(Question, data["created"])
+
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(question.format()["difficulty"], 1)
+        self.assertEqual(question.format()["category"], 2)
+
+    def test_400_create_question_with_missing_fields(self):
+        """Test that a question without an answer is rejected and not saved"""
+        res = self.client.post(
+            "/questions",
+            json={"question": "A question without answer", "difficulty": 1, "category": 1},
+        )
+
+        with self.app.app_context():
+            total = Question.query.count()
+
+        self.assert_error_response(res, 400, "bad request")
+        self.assertEqual(total, 5)
+
+    def test_422_create_question_with_unknown_category(self):
+        """Test that a question in a category that does not exist is rejected"""
+        res = self.client.post(
+            "/questions",
+            json={
+                "question": "A question",
+                "answer": "An answer",
+                "difficulty": 1,
+                "category": 1000,
+            },
+        )
+
+        with self.app.app_context():
+            total = Question.query.count()
+
+        self.assert_error_response(res, 422, "unprocessable")
+        self.assertEqual(total, 5)
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

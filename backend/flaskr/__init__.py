@@ -25,7 +25,11 @@ def paginate_questions(request, selection):
 
 
 def create_app(test_config=None):
-    # create and configure the app
+    """Create and configure the Trivia API application.
+
+    test_config can provide a SQLALCHEMY_DATABASE_URI, used by the tests
+    to connect to the test database instead of the development one.
+    """
     app = Flask(__name__)
 
     if test_config is None:
@@ -41,6 +45,7 @@ def create_app(test_config=None):
 
     @app.after_request
     def after_request(response):
+        """Set the CORS headers allowed by the API on every response."""
         response.headers["Access-Control-Allow-Headers"] = (
             "Content-Type,Authorization"
         )
@@ -49,12 +54,51 @@ def create_app(test_config=None):
         )
         return response
 
+    # ---------- Categories ----------
+
     @app.route("/categories")
     def retrieve_categories():
+        """Return all categories as an {id: type} dictionary."""
         return jsonify({"success": True, "categories": get_categories_dict()})
+
+    @app.route("/categories/<int:category_id>/questions")
+    def retrieve_questions_by_category(category_id):
+        """Return the questions of a category, with the category name.
+
+        An unknown category returns a 404 error, while an existing
+        category without questions returns an empty list.
+        """
+        category = Category.query.filter(
+            Category.id == category_id
+        ).one_or_none()
+        if category is None:
+            abort(404)
+
+        selection = (
+            Question.query.filter(Question.category == category_id)
+            .order_by(Question.id)
+            .all()
+        )
+        current_questions = paginate_questions(request, selection)
+
+        # Only a page beyond the last one is an error, not an empty category
+        if len(current_questions) == 0 and len(selection) > 0:
+            abort(404)
+
+        return jsonify(
+            {
+                "success": True,
+                "questions": current_questions,
+                "totalQuestions": len(selection),
+                "currentCategory": category.type,
+            }
+        )
+
+    # ---------- Questions ----------
 
     @app.route("/questions")
     def retrieve_questions():
+        """Return a page of 10 questions, with all categories."""
         selection = Question.query.order_by(Question.id).all()
         current_questions = paginate_questions(request, selection)
 
@@ -73,6 +117,7 @@ def create_app(test_config=None):
 
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
+        """Delete a question by id and return its id."""
         question = db.session.get(Question, question_id)
         if question is None:
             abort(404)
@@ -80,12 +125,14 @@ def create_app(test_config=None):
         try:
             question.delete()
         except Exception:
+            # Keep the session usable for the next requests
             db.session.rollback()
             abort(422)
 
         return jsonify({"success": True, "deleted": question_id})
 
     def search_questions(search_term):
+        """Return the questions containing search_term (case-insensitive)."""
         if not isinstance(search_term, str):
             abort(400)
 
@@ -107,7 +154,11 @@ def create_app(test_config=None):
         )
 
     def create_question(body):
+        """Validate the request body and save a new question.
 
+        The frontend form sends difficulty and category as strings, so
+        both are converted to integers before validation.
+        """
         question_text = str(body.get("question") or "").strip()
         answer_text = str(body.get("answer") or "").strip()
         if not question_text or not answer_text:
@@ -141,41 +192,22 @@ def create_app(test_config=None):
 
     @app.route("/questions", methods=["POST"])
     def create_or_search_questions():
+        """Search questions if the body has a searchTerm, else create one."""
         body = request.get_json(silent=True) or {}
 
         if "searchTerm" in body:
             return search_questions(body["searchTerm"])
         return create_question(body)
 
-    @app.route("/categories/<int:category_id>/questions")
-    def retrieve_questions_by_category(category_id):
-        category = Category.query.filter(
-            Category.id == category_id
-        ).one_or_none()
-        if category is None:
-            abort(404)
-
-        selection = (
-            Question.query.filter(Question.category == category_id)
-            .order_by(Question.id)
-            .all()
-        )
-        current_questions = paginate_questions(request, selection)
-
-        if len(current_questions) == 0 and len(selection) > 0:
-            abort(404)
-
-        return jsonify(
-            {
-                "success": True,
-                "questions": current_questions,
-                "totalQuestions": len(selection),
-                "currentCategory": category.type,
-            }
-        )
+    # ---------- Quiz ----------
 
     @app.route("/quizzes", methods=["POST"])
     def play_quiz():
+        """Return a random question not asked yet, or null at the end.
+
+        A category id of 0 means all categories: it is what the frontend
+        sends when the player chooses ALL.
+        """
         body = request.get_json(silent=True) or {}
         previous_questions = body.get("previous_questions", [])
         quiz_category = body.get("quiz_category")
@@ -208,6 +240,7 @@ def create_app(test_config=None):
     # ---------- Error handlers ----------
 
     def error_response(status_code, message):
+        """Build the JSON error response shared by all error handlers."""
         body = {"success": False, "error": status_code, "message": message}
         return jsonify(body), status_code
 

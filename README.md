@@ -108,6 +108,7 @@ The full API documentation (base URL, error handling, every endpoint with its pa
 - **Response keys:** the API returns `totalQuestions` and `currentCategory` (camelCase), as required by the API contract. `frontend/src/components/QuestionView.js` was updated to read these keys instead of `total_questions` and `current_category`.
 - **Data model:** `Question.category` is declared as an integer foreign key to `categories.id`, matching the schema created by `trivia.psql`. The starter model declared it as a string.
 - **Database credentials** are read from environment variables, with the original values as defaults, so that no password is stored in the repository.
+- **Questions by category** are fetched with `GET /categories/{category_id}/questions`, and not with the `POST` endpoint mentioned in the starter TODO: this is the request sent by the frontend (`getByCategory` in `QuestionView.js`), and a read operation follows REST principles with `GET`.
 
 The game mechanics are unchanged: a quiz has up to five questions, and ends earlier when no question is left in the chosen category.
 

@@ -68,19 +68,20 @@ The API runs on `http://127.0.0.1:5000/`.
 In a second terminal, from the `frontend` folder:
 
 ```bash
-npm install        # only once, to install the dependencies
+npm install                                     # only once, to install the dependencies
+export NODE_OPTIONS=--openssl-legacy-provider   # required with Node.js 17 or later
 npm start
 ```
 
 The app opens on `http://localhost:3000` and forwards API requests to the backend through the proxy defined in `package.json`.
 
-> With recent versions of Node.js, `npm start` fails with `ERR_OSSL_EVP_UNSUPPORTED`, because this React project uses an older version of webpack. Run `export NODE_OPTIONS=--openssl-legacy-provider` first.
+> `NODE_OPTIONS` is needed because this React project uses an older version of webpack: without it, recent versions of Node.js stop `npm start` with the error `ERR_OSSL_EVP_UNSUPPORTED`. The variable only lasts for the current terminal session.
 
 Both servers must run at the same time.
 
 ## Tests
 
-From the `backend` folder, with the virtual environment activated:
+From the `backend` folder, with the virtual environment activated. If you use custom database credentials, export them in this terminal too, as environment variables only apply to the terminal where they are set:
 
 ```bash
 python test_flaskr.py

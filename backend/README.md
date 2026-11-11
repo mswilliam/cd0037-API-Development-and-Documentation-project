@@ -24,10 +24,8 @@ source venv/Scripts/activate    # Windows (Git Bash)
 3. **PIP Dependencies** - With the virtual environment activated, install the dependencies:
 
 ```bash
-python -m pip install flask flask-cors flask-sqlalchemy "psycopg[binary]"
+python -m pip install -r requirements.txt
 ```
-
-> The pinned versions in `requirements.txt` date from 2019 and do not install on recent versions of Python. The command above installs current versions instead.
 
 #### Key Pip Dependencies
 

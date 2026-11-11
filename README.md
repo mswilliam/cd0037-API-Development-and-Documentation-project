@@ -57,7 +57,7 @@ From the `backend` folder:
 ```bash
 python -m venv venv
 source venv/bin/activate        # Windows (Git Bash): source venv/Scripts/activate
-python -m pip install flask flask-cors flask-sqlalchemy "psycopg[binary]"
+python -m pip install -r requirements.txt
 flask --app flaskr run --debug
 ```
 

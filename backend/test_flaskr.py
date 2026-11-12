@@ -4,7 +4,52 @@ import unittest
 from urllib.parse import quote_plus
 from flaskr import create_app
 from flask import abort
+from sqlalchemy import create_engine, text
 from models import db, Question, Category
+
+# Arbitrary key of the PostgreSQL advisory lock taken by a test run
+TEST_RUN_LOCK_KEY = 1606
+
+
+def get_test_database_path():
+    """Build the URL of the test database from the environment."""
+    database_name = os.environ.get("TEST_DB_NAME", "trivia_test")
+    # The tests drop all the tables: refuse to run on a database
+    # that is not explicitly a test database
+    if not database_name.endswith("_test"):
+        raise RuntimeError(
+            "TEST_DB_NAME must end with '_test', got '{}'".format(
+                database_name
+            )
+        )
+    return "postgresql://{}:{}@{}/{}".format(
+        os.environ.get("DB_USER", "postgres"),
+        quote_plus(os.environ.get("DB_PASSWORD", "password")),
+        os.environ.get("DB_HOST", "localhost:5432"),
+        database_name,
+    )
+
+
+def setUpModule():
+    """Make concurrent test runs on the same database wait for each other.
+
+    Each test drops and recreates the tables, so two runs at the same
+    time would delete each other's data. The lock is held on a dedicated
+    connection until the end of the run.
+    """
+    global lock_engine, lock_connection
+    lock_engine = create_engine(get_test_database_path())
+    lock_connection = lock_engine.connect()
+    lock_connection.execute(
+        text("SELECT pg_advisory_lock(:key)"), {"key": TEST_RUN_LOCK_KEY}
+    )
+    lock_connection.commit()
+
+
+def tearDownModule():
+    """Release the lock taken by setUpModule."""
+    lock_connection.close()
+    lock_engine.dispose()
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -12,24 +57,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        self.database_name = os.environ.get("TEST_DB_NAME", "trivia_test")
-        # tearDown drops all the tables: refuse to run on a database
-        # that is not explicitly a test database
-        if not self.database_name.endswith("_test"):
-            raise RuntimeError(
-                "TEST_DB_NAME must end with '_test', got '{}'".format(
-                    self.database_name
-                )
-            )
-        self.database_user = os.environ.get("DB_USER", "postgres")
-        self.database_password = os.environ.get("DB_PASSWORD", "password")
-        self.database_host = os.environ.get("DB_HOST", "localhost:5432")
-        self.database_path = "postgresql://{}:{}@{}/{}".format(
-            self.database_user,
-            quote_plus(self.database_password),
-            self.database_host,
-            self.database_name,
-        )
+        self.database_path = get_test_database_path()
 
         # Create app with the test configuration
         self.app = create_app({

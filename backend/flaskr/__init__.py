@@ -24,6 +24,38 @@ def paginate_questions(request, selection):
     return [question.format() for question in selection[start:end]]
 
 
+def validate_question_body(body):
+    """Validate a question payload and return its cleaned values.
+
+    The frontend form sends difficulty and category as strings, so both
+    are converted to integers. Aborts with 400 if a field is missing or
+    invalid, and with 422 if the category does not exist.
+    """
+    question_text = str(body.get("question") or "").strip()
+    answer_text = str(body.get("answer") or "").strip()
+    if not question_text or not answer_text:
+        abort(400)
+
+    try:
+        difficulty = int(body.get("difficulty"))
+        category_id = int(body.get("category"))
+    except (TypeError, ValueError):
+        abort(400)
+
+    if not 1 <= difficulty <= 5:
+        abort(400)
+
+    if db.session.get(Category, category_id) is None:
+        abort(422)
+
+    return {
+        "question": question_text,
+        "answer": answer_text,
+        "difficulty": difficulty,
+        "category": category_id,
+    }
+
+
 def create_app(test_config=None):
     """Create and configure the Trivia API application.
 
@@ -154,34 +186,8 @@ def create_app(test_config=None):
         )
 
     def create_question(body):
-        """Validate the request body and save a new question.
-
-        The frontend form sends difficulty and category as strings, so
-        both are converted to integers before validation.
-        """
-        question_text = str(body.get("question") or "").strip()
-        answer_text = str(body.get("answer") or "").strip()
-        if not question_text or not answer_text:
-            abort(400)
-
-        try:
-            difficulty = int(body.get("difficulty"))
-            category_id = int(body.get("category"))
-        except (TypeError, ValueError):
-            abort(400)
-
-        if not 1 <= difficulty <= 5:
-            abort(400)
-
-        if db.session.get(Category, category_id) is None:
-            abort(422)
-
-        question = Question(
-            question=question_text,
-            answer=answer_text,
-            category=category_id,
-            difficulty=difficulty,
-        )
+        """Validate the request body and save a new question."""
+        question = Question(**validate_question_body(body))
         try:
             question.insert()
         except Exception:

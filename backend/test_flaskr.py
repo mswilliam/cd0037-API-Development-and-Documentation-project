@@ -221,6 +221,80 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assert_error_response(res, 404, "resource not found")
 
+    # ---------- PUT /questions/<id> ----------
+
+    def test_update_question(self):
+        """Test updating a question, and that the update persists"""
+        updated_question = {
+            "question": "What is the heaviest internal organ in the body?",
+            "answer": "The liver",
+            "difficulty": 3,
+            "category": 2,
+        }
+        res = self.client.put("/questions/1", json=updated_question)
+        data = res.get_json()
+
+        with self.app.app_context():
+            question = db.session.get(Question, 1)
+            total = Question.query.count()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["updated"], 1)
+        self.assertEqual(data["question"], dict(updated_question, id=1))
+        self.assertEqual(question.format(), dict(updated_question, id=1))
+        self.assertEqual(total, 5)
+
+    def test_404_update_unknown_question(self):
+        """Test updating a question that does not exist"""
+        res = self.client.put(
+            "/questions/1000",
+            json={
+                "question": "A question",
+                "answer": "An answer",
+                "difficulty": 1,
+                "category": 1,
+            },
+        )
+
+        self.assert_error_response(res, 404, "resource not found")
+
+    def test_400_update_question_with_invalid_difficulty(self):
+        """Test that an invalid update is rejected and not saved"""
+        res = self.client.put(
+            "/questions/1",
+            json={
+                "question": "What is the heaviest organ in the human body?",
+                "answer": "The Liver",
+                "difficulty": 10,
+                "category": 1,
+            },
+        )
+
+        with self.app.app_context():
+            question = db.session.get(Question, 1)
+
+        self.assert_error_response(res, 400, "bad request")
+        self.assertEqual(question.format()["difficulty"], 4)
+
+    def test_422_update_question_with_unknown_category(self):
+        """Test that moving a question to an unknown category is rejected"""
+        res = self.client.put(
+            "/questions/1",
+            json={
+                "question": "What is the heaviest organ in the human body?",
+                "answer": "The Liver",
+                "difficulty": 4,
+                "category": 1000,
+            },
+        )
+
+        with self.app.app_context():
+            question = db.session.get(Question, 1)
+
+        self.assert_error_response(res, 422, "unprocessable")
+        self.assertEqual(question.format()["category"], 1)
+
     # ---------- CORS ----------
 
     def test_cors_headers(self):
@@ -233,9 +307,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertIn(
             "Content-Type", res.headers.get("Access-Control-Allow-Headers", "")
         )
-        self.assertIn(
-            "DELETE", res.headers.get("Access-Control-Allow-Methods", "")
-        )
+        allowed_methods = res.headers.get("Access-Control-Allow-Methods", "")
+        self.assertIn("DELETE", allowed_methods)
+        self.assertIn("PUT", allowed_methods)
 
     # ---------- GET /questions ----------
 

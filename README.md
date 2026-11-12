@@ -42,7 +42,7 @@ psql -U postgres -d trivia -f trivia.psql
 createdb -U postgres trivia_test
 ```
 
-The app connects with the user `postgres` and the password `password` by default. To use other credentials, set environment variables before running the backend or the tests:
+The app connects with the user `postgres` and the password `password` by default. These defaults are only meant for local development. To use other credentials, set environment variables before running the backend or the tests:
 
 ```bash
 export DB_PASSWORD='your_password'

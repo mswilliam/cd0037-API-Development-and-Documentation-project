@@ -52,6 +52,7 @@ dropdb -U postgres trivia
 #### Database credentials
 
 The app connects to PostgreSQL with the user `postgres` and the password `password` by default.
+These default values are only a convenience for local development: never use them for a real deployment.
 To use other credentials, set these environment variables before running the app or the tests:
 
 ```bash

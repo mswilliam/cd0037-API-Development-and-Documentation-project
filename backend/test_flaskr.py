@@ -39,9 +39,12 @@ class TriviaTestCase(unittest.TestCase):
         })
         self.client = self.app.test_client()
 
-        # Bind the app to the current context, create all tables
-        # and seed them with a known set of data
+        # Bind the app to the current context, recreate all tables and
+        # seed them with a known set of data. Dropping first removes any
+        # data already in the test database (for example trivia.psql, or
+        # an interrupted run), so that every test starts from the same state
         with self.app.app_context():
+            db.drop_all()
             db.create_all()
             self.seed_database()
 
@@ -104,6 +107,8 @@ class TriviaTestCase(unittest.TestCase):
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
+            # Close the connections of this test's app
+            db.engine.dispose()
 
     # ---------- Helpers ----------
 

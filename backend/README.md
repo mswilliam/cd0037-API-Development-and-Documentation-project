@@ -371,7 +371,9 @@ Then run the tests from the `backend` folder, with the virtual environment activ
 python test_flaskr.py
 ```
 
-Each test starts from a clean state: the tables are created and seeded with a known set of categories and questions in `setUp`, then dropped in `tearDown`. You do not need to load `trivia.psql` into the test database.
+Each test starts from a clean state: in `setUp`, the tables are dropped, recreated and seeded with a known set of categories and questions, then dropped again in `tearDown`. Data already present in the test database (for example if `trivia.psql` was loaded into it, or after an interrupted run) is therefore removed, and you do not need to load `trivia.psql` into the test database.
+
+If two test runs are started at the same time on the same database, the second one waits until the first one has finished (PostgreSQL advisory lock), so that they do not delete each other's data.
 
 As the tests drop all the tables after each run, they refuse to start if the test database name (`TEST_DB_NAME`) does not end with `_test`. This protects the development database from being emptied by mistake.
 

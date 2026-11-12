@@ -87,7 +87,7 @@ From the `backend` folder, with the virtual environment activated. If you use cu
 python test_flaskr.py
 ```
 
-The 32 tests cover the success and error behaviors of every endpoint, the error handlers and the CORS headers. Each test runs on the `trivia_test` database, seeded with a known set of data and cleaned after each test, so the tests never touch the development data. See the [backend README](./backend/README.md#testing) for details.
+The 32 tests cover the success and error behaviors of every endpoint, the error handlers and the CORS headers. Each test runs on the `trivia_test` database, whose tables are recreated and seeded with a known set of data at the start of each test, so the tests never touch the development data and do not depend on what the test database already contains. See the [backend README](./backend/README.md#testing) for details.
 
 ## API Reference
 

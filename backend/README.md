@@ -373,6 +373,8 @@ python test_flaskr.py
 
 Each test starts from a clean state: the tables are created and seeded with a known set of categories and questions in `setUp`, then dropped in `tearDown`. You do not need to load `trivia.psql` into the test database.
 
+As the tests drop all the tables after each run, they refuse to start if the test database name (`TEST_DB_NAME`) does not end with `_test`. This protects the development database from being emptied by mistake.
+
 ### Code style
 
 The backend code follows [PEP 8](https://peps.python.org/pep-0008/). To check it:

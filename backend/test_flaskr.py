@@ -13,6 +13,14 @@ class TriviaTestCase(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.database_name = os.environ.get("TEST_DB_NAME", "trivia_test")
+        # tearDown drops all the tables: refuse to run on a database
+        # that is not explicitly a test database
+        if not self.database_name.endswith("_test"):
+            raise RuntimeError(
+                "TEST_DB_NAME must end with '_test', got '{}'".format(
+                    self.database_name
+                )
+            )
         self.database_user = os.environ.get("DB_USER", "postgres")
         self.database_password = os.environ.get("DB_PASSWORD", "password")
         self.database_host = os.environ.get("DB_HOST", "localhost:5432")

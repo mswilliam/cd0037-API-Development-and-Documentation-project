@@ -82,7 +82,7 @@ def create_app(test_config=None):
             "Content-Type,Authorization"
         )
         response.headers["Access-Control-Allow-Methods"] = (
-            "GET,POST,DELETE,OPTIONS"
+            "GET,POST,PUT,DELETE,OPTIONS"
         )
         return response
 
@@ -162,6 +162,39 @@ def create_app(test_config=None):
             abort(422)
 
         return jsonify({"success": True, "deleted": question_id})
+
+    @app.route("/questions/<int:question_id>", methods=["PUT"])
+    def update_question(question_id):
+        """Replace the fields of a question and return the updated question.
+
+        The body must contain all the fields of a question, validated with
+        the same rules as for a creation.
+        """
+        question = db.session.get(Question, question_id)
+        if question is None:
+            abort(404)
+
+        body = request.get_json(silent=True) or {}
+        values = validate_question_body(body)
+
+        question.question = values["question"]
+        question.answer = values["answer"]
+        question.difficulty = values["difficulty"]
+        question.category = values["category"]
+        try:
+            question.update()
+        except Exception:
+            # Keep the session usable for the next requests
+            db.session.rollback()
+            abort(422)
+
+        return jsonify(
+            {
+                "success": True,
+                "updated": question_id,
+                "question": question.format(),
+            }
+        )
 
     def search_questions(search_term):
         """Return the questions containing search_term (case-insensitive)."""

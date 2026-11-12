@@ -87,7 +87,7 @@ From the `backend` folder, with the virtual environment activated. If you use cu
 python test_flaskr.py
 ```
 
-The 28 tests cover the success and error behaviors of every endpoint, the error handlers and the CORS headers. Each test runs on the `trivia_test` database, seeded with a known set of data and cleaned after each test, so the tests never touch the development data. See the [backend README](./backend/README.md#testing) for details.
+The 32 tests cover the success and error behaviors of every endpoint, the error handlers and the CORS headers. Each test runs on the `trivia_test` database, seeded with a known set of data and cleaned after each test, so the tests never touch the development data. See the [backend README](./backend/README.md#testing) for details.
 
 ## API Reference
 
@@ -100,6 +100,7 @@ The full API documentation (base URL, error handling, every endpoint with its pa
 | `GET` | `/categories/{category_id}/questions` | List the questions of a category |
 | `POST` | `/questions` | Create a question |
 | `POST` | `/questions` (with `searchTerm`) | Search questions |
+| `PUT` | `/questions/{question_id}` | Update a question |
 | `DELETE` | `/questions/{question_id}` | Delete a question |
 | `POST` | `/quizzes` | Get the next random question of a quiz |
 
@@ -109,6 +110,7 @@ The full API documentation (base URL, error handling, every endpoint with its pa
 - **Data model:** `Question.category` is declared as an integer foreign key to `categories.id`, matching the schema created by `trivia.psql`. The starter model declared it as a string.
 - **Database credentials** are read from environment variables, with the original values as defaults, so that no password is stored in the repository.
 - **Questions by category** are fetched with `GET /categories/{category_id}/questions`, and not with the `POST` endpoint mentioned in the starter TODO: this is the request sent by the frontend (`getByCategory` in `QuestionView.js`), and a read operation follows REST principles with `GET`.
+- **Update endpoint:** `PUT /questions/{question_id}` was added so that the API covers the full CRUD lifecycle (create, read, update, delete). It is not used by the provided frontend, which has no form to edit a question.
 
 The game mechanics are unchanged: a quiz has up to five questions, and ends earlier when no question is left in the chosen category.
 

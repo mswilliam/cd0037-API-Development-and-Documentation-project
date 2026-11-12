@@ -80,8 +80,8 @@ The `--debug` flag enables the debugger and restarts the server automatically wh
 
 - **Base URL:** this app can only be run locally. The backend is hosted at `http://127.0.0.1:5000/`, which is set as a proxy in the frontend configuration.
 - **Authentication:** this version of the application does not require authentication or API keys.
-- **CORS:** cross-origin requests are allowed from any origin. Responses allow the `Content-Type` and `Authorization` headers and the `GET`, `POST`, `DELETE` and `OPTIONS` methods.
-- **Request body:** requests with a body (`POST`) must send JSON, with the header `Content-Type: application/json`.
+- **CORS:** cross-origin requests are allowed from any origin. Responses allow the `Content-Type` and `Authorization` headers and the `GET`, `POST`, `PUT`, `DELETE` and `OPTIONS` methods.
+- **Request body:** requests with a body (`POST`, `PUT`) must send JSON, with the header `Content-Type: application/json`.
 
 ### Endpoints summary
 
@@ -92,6 +92,7 @@ The `--debug` flag enables the debugger and restarts the server automatically wh
 | `GET` | `/categories/{category_id}/questions` | List the questions of a category |
 | `POST` | `/questions` | Create a question |
 | `POST` | `/questions` (with `searchTerm`) | Search questions |
+| `PUT` | `/questions/{question_id}` | Update a question |
 | `DELETE` | `/questions/{question_id}` | Delete a question |
 | `POST` | `/quizzes` | Get the next random question of a quiz |
 
@@ -270,6 +271,43 @@ curl -X POST http://127.0.0.1:5000/questions \
   "currentCategory": null
 }
 ```
+
+#### `PUT /questions/{question_id}`
+
+- Updates the question with the given id. All the fields are replaced, so the body must contain all of them, even those that do not change.
+- Path parameters:
+  - `question_id` (integer, required): id of the question to update.
+- Request body: same fields and rules as for creating a question.
+  - `question` (string, required): text of the question.
+  - `answer` (string, required): text of the answer.
+  - `difficulty` (integer from 1 to 5, required).
+  - `category` (integer, required): id of an existing category.
+
+  Numeric values sent as strings (for example `"3"`) are accepted.
+- Returns: an object with a `success` value, the id of the updated question and the updated `question` object, as saved in the database.
+- Errors: `404` if the question does not exist, `400` if a field is missing, empty or invalid, `422` if the category does not exist or the question cannot be saved.
+- Sample request:
+
+```bash
+curl -X PUT http://127.0.0.1:5000/questions/20 \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the heaviest internal organ in the human body?", "answer": "The Liver", "difficulty": 3, "category": 1}'
+```
+
+```json
+{
+  "success": true,
+  "updated": 20,
+  "question": {
+    "id": 20,
+    "question": "What is the heaviest internal organ in the human body?",
+    "answer": "The Liver",
+    "category": 1,
+    "difficulty": 3
+  }
+}
+```
+
 
 #### `DELETE /questions/{question_id}`
 

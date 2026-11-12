@@ -1,9 +1,25 @@
-.vscode
-__pycache__
-venv
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
 
-# OS generated files #
-######################
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Frontend dependencies
+frontend/node_modules/
+
+# Environment files (keep an optional .env.example)
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -11,7 +27,3 @@ venv
 .Trashes
 ehthumbs.db
 Thumbs.db
-env/
-frontend/node_modules/
-
-.env
